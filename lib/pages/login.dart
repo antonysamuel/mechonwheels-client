@@ -79,6 +79,7 @@ class LoginPage extends StatelessWidget {
                         height: 20,
                       ),
                       TextField(
+                          obscureText: true,
                           controller: value.passwordController,
                           onChanged: (val) {
                             value.passwordText = val;
@@ -110,8 +111,20 @@ class LoginPage extends StatelessWidget {
                   ),
                 ),
               ),
+              Provider.of<StateProvider>(context).authErr == ""
+                  ? SizedBox()
+                  : Card(
+                      color: Colors.red,
+                      child: Padding(
+                        padding: const EdgeInsets.all(10.0),
+                        child: Text(
+                          Provider.of<StateProvider>(context).authErr,
+                          style: TextStyle(color: Colors.white),
+                        ),
+                      ),
+                    ),
               SizedBox(
-                height: 50,
+                height: 40,
               ),
               Container(
                 constraints: BoxConstraints(maxWidth: size.width * .85),
@@ -123,7 +136,7 @@ class LoginPage extends StatelessWidget {
                 child: TextButton(
                   onPressed: () =>
                       Provider.of<StateProvider>(context, listen: false)
-                          .loginUser(),
+                          .loginUser(context),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
@@ -148,11 +161,14 @@ class LoginPage extends StatelessWidget {
               Row(mainAxisAlignment: MainAxisAlignment.center, children: [
                 Text("I'm a new user. "),
                 TextButton(
-                    onPressed: () => Navigator.pushReplacement(
-                        context,
-                        PageTransition(
-                            child: SignUp(),
-                            type: PageTransitionType.rightToLeftWithFade)),
+                    onPressed: () {
+                      Provider.of<StateProvider>(context,listen: false).authErr = "";
+                      Navigator.pushReplacement(
+                          context,
+                          PageTransition(
+                              child: SignUp(),
+                              type: PageTransitionType.rightToLeftWithFade));
+                    },
                     child: Text(
                       "Sign Up",
                       style: TextStyle(color: Colors.pink, fontSize: 15),

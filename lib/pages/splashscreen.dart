@@ -1,10 +1,14 @@
 import 'dart:async';
-
+import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:mechonwheelz/services/providerClass.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mechonwheelz/pages/home.dart';
 import 'package:mechonwheelz/pages/login.dart';
 import 'package:mechonwheelz/pages/register.dart';
 import 'package:page_transition/page_transition.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class SplashScreen extends StatefulWidget {
   const SplashScreen({Key? key}) : super(key: key);
@@ -16,14 +20,28 @@ class SplashScreen extends StatefulWidget {
 class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
-    Timer(
-        Duration(seconds: 3),
-        () => Navigator.pushReplacement(
+    Timer(Duration(seconds: 2), () async {
+      final storage = new FlutterSecureStorage();
+      String token = await storage.read(key: 'token') ?? "0";
+      print(token);
+      if (token == "0") {
+        Navigator.pushReplacement(
             context,
             PageTransition(
                 child: SignUp(),
                 type: PageTransitionType.fade,
-                duration: Duration(seconds: 1))));
+                duration: Duration(seconds: 1)));
+        return;
+      }
+      Provider.of<StateProvider>(context,listen: false).token = token;
+      print("Token $token");
+      Navigator.pushReplacement(
+          context,
+          PageTransition(
+              child: HomePage(),
+              type: PageTransitionType.fade,
+              duration: Duration(seconds: 1)));
+    });
     super.initState();
   }
 

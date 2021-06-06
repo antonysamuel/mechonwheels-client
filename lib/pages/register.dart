@@ -189,8 +189,20 @@ class SignUp extends StatelessWidget {
                                     fillColor: Color(0xffe7edeb),
                                     prefixIcon: Icon(Icons.password)),
                               ),
+                              value.authErr == ""
+                                  ? SizedBox()
+                                  : Card(
+                                      color: Colors.red,
+                                      child: Padding(
+                                        padding: const EdgeInsets.all(10.0),
+                                        child: Text(
+                                          value.authErr,
+                                          style: TextStyle(color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
                               SizedBox(
-                                height: 50,
+                                height: 40,
                               ),
                               Container(
                                 height: 70,
@@ -203,7 +215,8 @@ class SignUp extends StatelessWidget {
                                     ])),
                                 alignment: Alignment.center,
                                 child: TextButton(
-                                    onPressed: () => value.registerUser(),
+                                    onPressed: () =>
+                                        value.registerUser(context),
                                     child: Row(
                                       mainAxisAlignment:
                                           MainAxisAlignment.center,
@@ -235,13 +248,17 @@ class SignUp extends StatelessWidget {
                                 children: [
                                   Text("I'm already a member."),
                                   TextButton(
-                                      onPressed: () =>
-                                          Navigator.pushReplacement(
-                                              context,
-                                              PageTransition(
-                                                  child: LoginPage(),
-                                                  type: PageTransitionType
-                                                      .rightToLeft)),
+                                      onPressed: () {
+                                        Provider.of<StateProvider>(context,
+                                                listen: false)
+                                            .authErr = "";
+                                        Navigator.pushReplacement(
+                                            context,
+                                            PageTransition(
+                                                child: LoginPage(),
+                                                type: PageTransitionType
+                                                    .rightToLeft));
+                                      },
                                       child: Text(
                                         "Sign In",
                                         style: TextStyle(

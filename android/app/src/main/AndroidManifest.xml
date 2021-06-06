@@ -2,7 +2,10 @@
     package="com.example.mechonwheelz">
    <application
         android:label="mechonwheelz"
-        android:icon="@mipmap/ic_launcher">
+        android:icon="@mipmap/ic_launcher">        
+ 
+    <meta-data android:name="com.google.android.geo.API_KEY"
+               android:value="@string/MAPS_API_KEY"/>
         <activity
             android:name=".MainActivity"
             android:launchMode="singleTop"
@@ -38,4 +41,6 @@
             android:name="flutterEmbedding"
             android:value="2" />
     </application>
+    <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+<uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />
 </manifest>
