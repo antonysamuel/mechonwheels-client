@@ -4,6 +4,7 @@ import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mechonwheelz/pages/login.dart';
 import 'package:mechonwheelz/pages/servicePages/nearbyWorkshops.dart';
+import 'package:mechonwheelz/pages/servicePages/serchPage.dart';
 import 'package:mechonwheelz/services/providerClass.dart';
 import 'package:page_transition/page_transition.dart';
 import 'package:provider/provider.dart';
@@ -81,18 +82,20 @@ class HomePage extends StatelessWidget {
                 ),
               ),
               SizedBox(
-                height: 40,
+                height: 45,
               ),
               SizedBox(
                 width: size.width * .9,
                 child: Text(
                   "Services",
-                  style:
-                      GoogleFonts.montserrat(fontSize: 28, color: Colors.black),
+                  style: GoogleFonts.montserrat(
+                      fontSize: 28,
+                      color: Colors.grey,
+                      fontWeight: FontWeight.bold),
                 ),
               ),
               Container(
-                margin: EdgeInsets.only(top: 30),
+                margin: EdgeInsets.only(top: 20),
                 padding: EdgeInsets.symmetric(horizontal: 18),
                 constraints: BoxConstraints(maxHeight: size.height * .7),
                 child: GridView.count(
@@ -119,7 +122,7 @@ class HomePage extends StatelessWidget {
                         "Search\nWorkshop",
                         'https://pics.freeicons.io/uploads/icons/png/10428975741620713519-512.png',
                         context,
-                        FindNearby()),
+                        SearchPage()),
                   ],
                 ),
               )

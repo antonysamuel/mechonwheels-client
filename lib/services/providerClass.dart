@@ -177,7 +177,7 @@ class StateProvider with ChangeNotifier {
     if (workshops.isNotEmpty || !refetch) {
       return;
     }
-  
+
     try {
       Position position = await fetchLocation();
       // print("Location");
@@ -225,6 +225,31 @@ class StateProvider with ChangeNotifier {
         desiredAccuracy: LocationAccuracy.best);
     // print("Lat: ${position.latitude}\nLon: ${position.longitude}");
     return position;
+  }
+
+  /////////////////////////findWorkshops////////////////////////////
+  String searchUrl = "http://10.0.3.2:8000/search/?query=";
+  List<Workshops> findWorkshopList = [];
+  void searchWorkshop(String searchTxt) async {
+    if (findWorkshopList.isNotEmpty) {
+      findWorkshopList.clear();
+    }
+    final response = await dio.get(searchUrl + searchTxt);
+
+    for (var items in response.data) {
+      findWorkshopList.add(Workshops(
+          items['workshopName'],
+          items['address'],
+          items['phone'],
+          double.parse(items['latitude']),
+          double.parse(items['longitude'])));
+    }
+    notifyListeners();
+  }
+
+  void clearWorkshopList() {
+    findWorkshopList.clear();
+    notifyListeners();
   }
 }
 
