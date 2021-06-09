@@ -1,7 +1,10 @@
+import 'dart:io';
+
 import 'package:dio/dio.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'package:hive/hive.dart';
 import 'package:http/http.dart' as http;
 import 'package:mechonwheelz/pages/home.dart';
 import 'package:mechonwheelz/services/models.dart';
@@ -10,8 +13,40 @@ import 'package:geolocator/geolocator.dart';
 import 'package:page_transition/page_transition.dart';
 
 class StateProvider with ChangeNotifier {
+  var hive = Hive.box('tokenBox');
   String url = "10.0.3.2:8000";
   String token = "";
+  String fetchedName = "";
+  String fetchedUserName = "";
+
+//////////////////Check Token Validity HomePage///////////////////////
+
+  final dio = Dio();
+  Future<bool> checkTokenValid(String token) async {
+    try {
+      token = hive.get('token');
+      print(token);
+
+      final response = await http.get(
+        Uri.http(url, 'home/'),
+        headers: {
+          'Authorization': 'Token $token',
+          "Content-Type": "application/json",
+        },
+      );
+      final data = jsonDecode(response.body);
+      fetchedName = data['name'];
+      fetchedUserName = data['username'];
+      notifyListeners();
+      if (response.statusCode == 401) {
+        return false;
+      }
+    } catch (e) {
+      print("Error");
+      return false;
+    }
+    return true;
+  }
 
 /////////////////Login Register Logic/////////////////////////////////
   TextEditingController emailController = TextEditingController();
@@ -21,6 +56,7 @@ class StateProvider with ChangeNotifier {
 
   String emailText = "";
   String usernameText = "";
+  String nameText = "";
   String passwordText = "";
   String password2Text = "";
 
@@ -33,6 +69,7 @@ class StateProvider with ChangeNotifier {
 
   ValidationService emailValidation = ValidationService("null", "null");
   ValidationService usernameValidation = ValidationService("null", "null");
+  ValidationService nameValidation = ValidationService("null", "null");
   ValidationService passwordValidation = ValidationService("null", "null");
   ValidationService password2Validation = ValidationService("null", "null");
 
@@ -55,6 +92,17 @@ class StateProvider with ChangeNotifier {
       loginIsValid = false;
     } else {
       usernameValidation = ValidationService(value, "null");
+      loginIsValid = true;
+    }
+    notifyListeners();
+  }
+
+  void validatename(String value) {
+    if (value.length <= 3) {
+      nameValidation = ValidationService("null", "Invalid username");
+      loginIsValid = false;
+    } else {
+      nameValidation = ValidationService(value, "null");
       loginIsValid = true;
     }
     notifyListeners();
@@ -101,6 +149,8 @@ class StateProvider with ChangeNotifier {
       return;
     }
     print('Username: $usernameText\nPassword: $passwordText');
+    fetchedName = nameText;
+    fetchedUserName = usernameText;
     try {
       final response = await http.post(Uri.http(url, 'login/'),
           headers: {"Content-Type": "application/json"},
@@ -108,7 +158,7 @@ class StateProvider with ChangeNotifier {
             'username': usernameText,
             'password': passwordText,
           }));
-      final storage = new FlutterSecureStorage();
+
       var data = jsonDecode(response.body);
       if (data.containsKey("err")) {
         print(data['err']);
@@ -118,9 +168,13 @@ class StateProvider with ChangeNotifier {
       }
       authErr = "";
       token = data['token'];
-      await storage.write(key: 'token', value: token);
+      await hive.put('token', token);
+      fetchedName = data['name'];
       Navigator.pushReplacement(ctx,
           PageTransition(child: HomePage(), type: PageTransitionType.fade));
+    } on SocketException {
+      authErr = "Check Internet Connection";
+      notifyListeners();
     } catch (e) {
       print(e);
     }
@@ -136,29 +190,41 @@ class StateProvider with ChangeNotifier {
       return;
     }
     print('Username: $usernameText\nPassword: $passwordText');
-    final response = await http.post(Uri.http(url, 'register/'),
-        headers: {"Content-Type": "application/json"},
-        body: jsonEncode({
-          'username': usernameText,
-          'email': emailText,
-          'password': passwordText,
-          'password2': password2Text
-        }));
-    var data = jsonDecode(response.body);
-    if (data.containsKey("username")) {
-      print(data['username'][0]);
-      authErr = data['username'][0];
-      notifyListeners();
-      return;
-    }
-    authErr = "";
-    print(data['token']);
-    token = data['token'];
-    final storage = new FlutterSecureStorage();
-    await storage.write(key: 'token', value: token);
+    fetchedName = nameText;
+    fetchedUserName = usernameText;
+    try {
+      final response = await http.post(Uri.http(url, 'register/'),
+          headers: {"Content-Type": "application/json"},
+          body: jsonEncode({
+            'username': usernameText,
+            'email': emailText,
+            'name': nameText,
+            'password': passwordText,
+            'password2': password2Text
+          }));
+      var data = jsonDecode(response.body);
+      if (data.containsKey("username")) {
+        print(data['username'][0]);
+        authErr = data['username'][0];
+        notifyListeners();
+        return;
+      }
+      authErr = "";
+      print(data['token']);
+      token = data['token'];
+      await hive.put('token', token);
 
-    Navigator.pushReplacement(
-        ctx, PageTransition(child: HomePage(), type: PageTransitionType.fade));
+      Navigator.pushReplacement(ctx,
+          PageTransition(child: HomePage(), type: PageTransitionType.fade));
+    } on SocketException {
+      authErr = "Check Internet Connection";
+      notifyListeners();
+    } catch (e) {}
+  }
+
+  void closeErrorCard() {
+    authErr = "";
+    notifyListeners();
   }
 
   ///////////////////////////////////////////////////////////////////////////////
@@ -172,7 +238,6 @@ class StateProvider with ChangeNotifier {
 
   List<Workshops> workshops = [];
   String urln = "http://10.0.3.2:8000/nearby/";
-  final dio = Dio();
   void fetchWorkshops() async {
     if (workshops.isNotEmpty || !refetch) {
       return;
@@ -197,6 +262,7 @@ class StateProvider with ChangeNotifier {
       // print(response);
       for (var items in response.data) {
         workshops.add(Workshops(
+            items['user'],
             items['workshopName'],
             items['address'],
             items['phone'],
@@ -238,11 +304,13 @@ class StateProvider with ChangeNotifier {
 
     for (var items in response.data) {
       findWorkshopList.add(Workshops(
-          items['workshopName'],
-          items['address'],
-          items['phone'],
-          double.parse(items['latitude']),
-          double.parse(items['longitude'])));
+        items['user'],
+        items['workshopName'],
+        items['address'],
+        items['phone'],
+        double.parse(items['latitude']),
+        double.parse(items['longitude']),
+      ));
     }
     notifyListeners();
   }
@@ -250,6 +318,31 @@ class StateProvider with ChangeNotifier {
   void clearWorkshopList() {
     findWorkshopList.clear();
     notifyListeners();
+  }
+
+  /////////////////////book Service////////////////////////////////////////
+  bool isBooking = false;
+  String user = "akash";
+
+  void bookService(Position loc, int uid, String msg, int index) async {
+    try {
+      dio.options.headers['Authorization'] = "Token $token";
+      final response =
+          await dio.post("http://10.0.3.2:8000/bookService/", data: {
+        "uid": uid,
+        "username": fetchedUserName,
+        "msg": msg,
+        "lat": loc.latitude,
+        "lon": loc.longitude
+      });
+      print(response.data);
+      findWorkshopList[index].isBooked = true;
+      notifyListeners();
+    } on DioError catch (e) {
+      print(e.toString());
+    } catch (e) {
+      print(e.toString());
+    }
   }
 }
 

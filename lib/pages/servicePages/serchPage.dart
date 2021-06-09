@@ -18,6 +18,8 @@ class SearchPage extends StatelessWidget {
           SliverAppBar(
             expandedHeight: size.height * .33,
             floating: true,
+            collapsedHeight: 100,
+          stretch: true,
             backgroundColor: Colors.transparent,
             flexibleSpace: FlexibleSpaceBar(
                 centerTitle: true,

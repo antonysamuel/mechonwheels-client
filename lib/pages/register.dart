@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:mechonwheelz/pages/login.dart';
@@ -15,8 +17,9 @@ class SignUp extends StatelessWidget {
         body: SingleChildScrollView(
             physics: BouncingScrollPhysics(),
             child: Container(
+              padding: EdgeInsets.symmetric(horizontal: 15),
               constraints: BoxConstraints(
-                  maxHeight: size.height + 100, maxWidth: size.width),
+                  maxHeight: size.height + 200, maxWidth: size.width),
               decoration: BoxDecoration(
                   gradient: LinearGradient(
                       colors: [Colors.blue.shade800, Colors.blue.shade500],
@@ -27,7 +30,7 @@ class SignUp extends StatelessWidget {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Expanded(
-                      flex: 2,
+                      flex: 1,
                       child: Padding(
                         padding:
                             EdgeInsets.symmetric(vertical: 36, horizontal: 24),
@@ -53,7 +56,7 @@ class SignUp extends StatelessWidget {
                         ),
                       )),
                   Expanded(
-                    flex: 5,
+                    flex: 4,
                     child: Consumer<StateProvider>(
                       builder: (context, value, child) => Container(
                         width: double.infinity,
@@ -71,11 +74,41 @@ class SignUp extends StatelessWidget {
                             children: [
                               TextField(
                                 onChanged: (val) {
+                                  value.nameText = val;
+                                  value.validatename(val);
+                                },
+                                decoration: InputDecoration(
+                                    hintText: 'Enter your name',
+                                    labelText: "Name",
+                                    errorText:
+                                        value.nameValidation.error == "null"
+                                            ? null
+                                            : value.nameValidation.error,
+                                    border: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide: BorderSide.none),
+                                    errorBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(8),
+                                        borderSide:
+                                            BorderSide(color: Colors.red)),
+                                    focusedBorder: OutlineInputBorder(
+                                        borderRadius: BorderRadius.circular(10),
+                                        borderSide: BorderSide(
+                                            color: Colors.deepOrange)),
+                                    filled: true,
+                                    fillColor: Color(0xffe7edeb),
+                                    prefixIcon: Icon(Icons.person)),
+                              ),
+                              SizedBox(
+                                height: 20,
+                              ),
+                              TextField(
+                                onChanged: (val) {
                                   value.usernameText = val;
                                   value.validateUsername(val);
                                 },
                                 decoration: InputDecoration(
-                                    hintText: 'user',
+                                    hintText: 'Choose a username',
                                     labelText: "Username",
                                     errorText:
                                         value.usernameValidation.error == "null"
@@ -191,24 +224,15 @@ class SignUp extends StatelessWidget {
                               ),
                               value.authErr == ""
                                   ? SizedBox()
-                                  : Card(
-                                      color: Colors.red,
-                                      child: Padding(
-                                        padding: const EdgeInsets.all(10.0),
-                                        child: Text(
-                                          value.authErr,
-                                          style: TextStyle(color: Colors.white),
-                                        ),
-                                      ),
-                                    ),
+                                  : showErrorCard(value),
                               SizedBox(
                                 height: 40,
                               ),
                               Container(
                                 height: 70,
-                                width: 200,
+                                width: 250,
                                 decoration: BoxDecoration(
-                                    borderRadius: BorderRadius.circular(40),
+                                    borderRadius: BorderRadius.circular(30),
                                     gradient: LinearGradient(colors: [
                                       Colors.blue,
                                       Colors.blue.shade200
@@ -275,5 +299,19 @@ class SignUp extends StatelessWidget {
                 ],
               ),
             )));
+  }
+
+  Card showErrorCard(StateProvider value) {
+    Timer(Duration(seconds: 3), () => value.closeErrorCard());
+    return Card(
+      color: Colors.red,
+      child: Padding(
+        padding: const EdgeInsets.all(10.0),
+        child: Text(
+          value.authErr,
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+    );
   }
 }

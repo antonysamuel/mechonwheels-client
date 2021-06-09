@@ -1,12 +1,14 @@
 import 'package:url_launcher/url_launcher.dart';
 
 class Workshops {
+  int uid;
   String name;
   String address;
   int phone;
   double lat;
   double lon;
-  Workshops(this.name, this.address, this.phone, this.lat, this.lon);
+  bool isBooked = false;
+  Workshops(this.uid, this.name, this.address, this.phone, this.lat, this.lon);
 }
 
 class MapUtils {

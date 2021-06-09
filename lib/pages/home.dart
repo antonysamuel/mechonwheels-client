@@ -2,7 +2,9 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:hive/hive.dart';
 import 'package:mechonwheelz/pages/login.dart';
+import 'package:mechonwheelz/pages/servicePages/bookService.dart';
 import 'package:mechonwheelz/pages/servicePages/nearbyWorkshops.dart';
 import 'package:mechonwheelz/pages/servicePages/serchPage.dart';
 import 'package:mechonwheelz/services/providerClass.dart';
@@ -17,7 +19,7 @@ class HomePage extends StatelessWidget {
     Size size = MediaQuery.of(context).size;
     final provider = Provider.of<StateProvider>(context);
     return Scaffold(
-        backgroundColor: Color(0xffeeeeee),
+        backgroundColor: Color(0xffdbedf3),
         body: SingleChildScrollView(
           child: Column(
             children: [
@@ -36,7 +38,7 @@ class HomePage extends StatelessWidget {
                           spreadRadius: 3),
                     ],
                     gradient: LinearGradient(
-                        colors: [Colors.blue, Colors.green.withOpacity(.8)],
+                        colors: [Colors.pink, Colors.blue.withOpacity(.8)],
                         begin: Alignment.bottomLeft,
                         end: Alignment.topRight)),
                 child: ListTile(
@@ -49,7 +51,7 @@ class HomePage extends StatelessWidget {
                     ),
                   ),
                   title: Text(
-                    "Hi ${provider.userName},",
+                    "Hi ${provider.fetchedName},",
                     style: GoogleFonts.notoSans(
                         textStyle: TextStyle(
                             color: Colors.white,
@@ -63,8 +65,8 @@ class HomePage extends StatelessWidget {
                   ),
                   trailing: TextButton(
                     onPressed: () async {
-                      final storage = new FlutterSecureStorage();
-                      await storage.delete(key: 'token');
+                      var hive = Hive.box('tokenBox');
+                      hive.put('token', "0");
 
                       Navigator.pushReplacement(
                           context,
@@ -112,7 +114,7 @@ class HomePage extends StatelessWidget {
                         "Book Service",
                         'https://pics.freeicons.io/uploads/icons/png/8893889031595988887-512.png',
                         context,
-                        FindNearby()),
+                        BookService()),
                     buildServiceCard(
                         "Roadside\nAssistance",
                         'https://pics.freeicons.io/uploads/icons/png/143590661582779206-512.png',

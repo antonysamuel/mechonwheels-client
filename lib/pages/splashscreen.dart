@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:hive/hive.dart';
 import 'package:mechonwheelz/services/providerClass.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
@@ -21,10 +22,17 @@ class _SplashScreenState extends State<SplashScreen> {
   @override
   void initState() {
     Timer(Duration(seconds: 2), () async {
-      final storage = new FlutterSecureStorage();
-      String token = await storage.read(key: 'token') ?? "0";
-      print(token);
-      if (token == "0") {
+      String token = "0";
+      try {
+        var hive = Hive.box('tokenBox');
+        token = await hive.get('token');
+      } catch (e) {
+        print(e);
+      }
+
+      bool _isvalid = await Provider.of<StateProvider>(context, listen: false)
+          .checkTokenValid(token);
+      if (token == "0" || !_isvalid) {
         Navigator.pushReplacement(
             context,
             PageTransition(
@@ -33,8 +41,9 @@ class _SplashScreenState extends State<SplashScreen> {
                 duration: Duration(seconds: 1)));
         return;
       }
-      Provider.of<StateProvider>(context,listen: false).token = token;
+      Provider.of<StateProvider>(context, listen: false).token = token;
       print("Token $token");
+
       Navigator.pushReplacement(
           context,
           PageTransition(
